@@ -9,6 +9,7 @@ class Autonoleggio:
         self.nome=nome
         self.responsabile=responsabile
         self.automobili=[]   #le caricheremo dal file automobili.csv. questa è una lista di oggetti
+        self.noleggi=[]
 
 
     def carica_file_automobili(self, file_path):
@@ -36,7 +37,7 @@ class Autonoleggio:
         """Aggiunge un'automobile nell'autonoleggio: aggiunge solo nel sistema e non aggiorna il file"""
         if self.automobili: #se ci sono
             for a in self.automobili:
-                ultimo_codice=max(int(a.codice[1:]))  #considera solo la parte numerica, togliendo la A
+                ultimo_codice=max(a.codice[1:])  #considera solo la parte numerica, togliendo la A
                 nuovo_codice=f"A{ultimo_codice}+1"   #aggiunge 1 al codice più grande del file
         else:
             nuovo_codice="A1"
@@ -59,24 +60,47 @@ class Autonoleggio:
 
     def nuovo_noleggio(self, data, id_automobile, cognome_cliente):
         """Crea un nuovo noleggio"""
-        self.noleggio=[]  #come all'inizio con automobili
+        a=None
+        for auto in self.automobili:
+            if auto.codice== id_automobile:
+                a=auto
+                break
+
+        if auto == None:
+            raise Exception("l'auto non esiste")
+        if auto.noleggiata:
+            raise Exception("l'auto è già stata noleggiata")
+
         if self.noleggi:  # se ci sono già noleggi
             for n in self.noleggi:
             # prendo tutti gli ID esistenti e estraggo la parte numerica
-                ultimo_numero = max(int(n.id_noleggio[1:]))  #cosi toglie la N e considera solo la parte numerica
+                ultimo_numero = max(n.id_noleggio[1:])  #cosi toglie la N e considera solo la parte numerica
                 id_noleggio = f"N{ultimo_numero + 1}"
         else:
             # se non ci sono ancora noleggi, parto da N1
             id_noleggio = "N1"
+        auto.noleggiata=True
 
-        return self.noleggio
-        noleggio=Noleggio(data, id_noleggio, id_automobile, cognome_cliente)
+        noleggio = Noleggio(data, id_noleggio, id_automobile, cognome_cliente)
+        self.noleggi.append(noleggio)
 
-        for id_automobile in self.noleggio:
-            if id_automobile
-
-
+        return self.noleggi
 
     def termina_noleggio(self, id_noleggio):
         """Termina un noleggio in atto"""
-        # TODO
+        noleggio_terminato=None
+
+        for noleggio in self.noleggi:
+            if noleggio.id_noleggio == id_noleggio:
+                noleggio_terminato=noleggio
+                break
+        if noleggio_terminato is None:
+            raise Exception("il noleggio non esiste")
+
+        for a in self.automobili:
+            if a.codice == noleggio_terminato.id_automobile:
+                a.noleggiata=False
+                break
+        self.noleggi.remove(noleggio_terminato)
+        return noleggio_terminato
+
